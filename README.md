@@ -1,13 +1,9 @@
 # Step Functions Migration Demo: Inline Map vs Distributed Map
 
-AWS Step Functions における **Inline Map** と **Distributed Map** の比較デモプロジェクトです。
-エラーハンドリングの違いとベストプラクティスを実装したCDKコードを提供します。
-
 ## 🎯 プロジェクトの目的
 
 - **Inline Map**: 複雑なエラーハンドリングが必要な場合のパターン
 - **Distributed Map**: 大規模並列処理に最適化されたパターン
-- **CDKベストプラクティス**: 実際のプロダクション環境で使える実装例
 
 ## 🏗️ アーキテクチャ
 
@@ -114,6 +110,3 @@ Lambda関数は10%の確率でランダムエラーを発生させます：
 - [AWS CDK Developer Guide](https://docs.aws.amazon.com/cdk/)
 - [Distributed Map の公式ドキュメント](https://docs.aws.amazon.com/step-functions/latest/dg/concepts-asl-use-map-state-distributed.html)
 
----
-
-**⚠️ 注意**: このプロジェクトはデモ用途です。本番環境での使用前に、セキュリティ要件と運用要件を十分に検討してください。
