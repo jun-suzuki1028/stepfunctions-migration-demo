@@ -94,34 +94,6 @@ Lambda関数は10%の確率でランダムエラーを発生させます：
 - ✅ **タイムアウト設定**: 適切なタイムアウト値設定
 - ✅ **型安全性**: TypeScriptによる型安全な実装
 
-### CDK Nag対応（オプション）
-
-```bash
-# セキュリティチェック用CDK Nagの追加
-npm install cdk-nag
-
-# セキュリティチェック実行
-npx ts-node cdk-nag-demo.ts
-```
-
-## 📊 出力
-
-デプロイ完了後、以下の値が出力されます：
-
-- `InlineMapStateMachineArn`: Inline Map ステートマシンARN
-- `DistributedMapStateMachineArn`: Distributed Map ステートマシンARN  
-- `ProcessItemFunctionArn`: 共有Lambda関数ARN
-- `LogGroupName`: CloudWatch LogグループName
-
-## 🔍 デバッグとモニタリング
-
-### CloudWatch Logs
-- エラーレベルのログが `/aws/stepfunctions/StepFunctionsComparisonStack` に出力
-- 実行詳細とエラー内容を確認可能
-
-### X-Ray トレーシング
-- 両方のステートマシンでトレーシング有効
-- パフォーマンス分析と実行フロー可視化
 
 ## 📝 技術仕様
 
@@ -135,17 +107,6 @@ npx ts-node cdk-nag-demo.ts
   - CloudWatch Logs
   - AWS X-Ray
 
-## 🤝 コントリビューション
-
-1. このリポジトリをフォーク
-2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
-
-## 📄 ライセンス
-
-このプロジェクトはMITライセンスの下で公開されています。
 
 ## 🔗 関連リンク
 
