@@ -19,8 +19,6 @@ export class DistributedMapConstruct extends Construct {
   constructor(scope: Construct, id: string, props: DistributedMapConstructProps) {
     super(scope, id);
 
-
-
     const distributedMap = new sfn.DistributedMap(this, 'DistributedMap', {
       itemsPath: '$.items',
       resultPath: '$.results',

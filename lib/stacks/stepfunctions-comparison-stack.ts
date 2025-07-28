@@ -29,7 +29,6 @@ export class StepFunctionsComparisonStack extends cdk.Stack {
         exports.handler = async (event) => {
           console.log('Processing item:', JSON.stringify(event));
           
-          // 10%の確率でエラーを発生させる理由: Mapタイプ間のエラーハンドリングの違いを明確に示すため
           if (Math.random() < 0.1) {
             console.error('Controlled error for error handling comparison');
             throw new Error('Simulated processing error to test error handling strategies');
@@ -71,7 +70,6 @@ export class StepFunctionsComparisonStack extends cdk.Stack {
       toleratedFailurePercentage: 10,
       timeout: cdk.Duration.minutes(15),
     });
-
 
     this.inlineMapStateMachine = inlineMapConstruct.stateMachine;
     this.distributedMapStateMachine = distributedMapConstruct.stateMachine;
