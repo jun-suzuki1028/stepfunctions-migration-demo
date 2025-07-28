@@ -19,21 +19,20 @@ export class StepFunctionsComparisonStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: StepFunctionsComparisonStackProps) {
     super(scope, id, props);
 
-    // 共通のLambda関数（デモ用エラーシミュレーション付き）
     this.sharedLambdaFunction = new lambda.Function(this, 'ProcessItemFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      description: 'Demo function for processing items with simulated errors',
+      description: 'Shared processing function with controlled error rate for comparing error handling approaches',
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
       code: lambda.Code.fromInline(`
         exports.handler = async (event) => {
           console.log('Processing item:', JSON.stringify(event));
           
-          // 10%の確率でエラーを発生させる（デモ用）
+          // 10%の確率でエラーを発生させる理由: Mapタイプ間のエラーハンドリングの違いを明確に示すため
           if (Math.random() < 0.1) {
-            console.error('Simulated error for demonstration');
-            throw new Error('Random processing error for demo');
+            console.error('Controlled error for error handling comparison');
+            throw new Error('Simulated processing error to test error handling strategies');
           }
           
           const result = { 
@@ -53,30 +52,27 @@ export class StepFunctionsComparisonStack extends cdk.Stack {
       },
     });
 
-    // CloudWatch Logsの設定（デモ用）
     const logGroup = new logs.LogGroup(this, 'StepFunctionsLogGroup', {
       logGroupName: `/aws/stepfunctions/${this.stackName}`,
       retention: props?.retentionDays ?? logs.RetentionDays.ONE_WEEK,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // InlineMapのConstruct（エラー許容なし）
     const inlineMapConstruct = new InlineMapConstruct(this, 'InlineMapConstruct', {
       processItemFunction: this.sharedLambdaFunction,
       logGroup,
       timeout: cdk.Duration.minutes(15),
     });
 
-    // DistributedMapのConstruct
     const distributedMapConstruct = new DistributedMapConstruct(this, 'DistributedMapConstruct', {
       processItemFunction: this.sharedLambdaFunction,
       logGroup,
-      maxConcurrency: 5, // デモ用：低い同時実行数
-      toleratedFailurePercentage: 10, // 10%の失敗を許容
+      maxConcurrency: 5,
+      toleratedFailurePercentage: 10,
       timeout: cdk.Duration.minutes(15),
     });
 
-    // パブリックプロパティの設定
+
     this.inlineMapStateMachine = inlineMapConstruct.stateMachine;
     this.distributedMapStateMachine = distributedMapConstruct.stateMachine;
 
