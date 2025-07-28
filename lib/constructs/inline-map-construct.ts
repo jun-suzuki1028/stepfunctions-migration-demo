@@ -67,7 +67,6 @@ export class InlineMapConstruct extends Construct {
       comment: 'Prepare results for error checking (zero tolerance)',
     });
 
-    // ゼロトレラントを採用する理由: データ品質や一貫性が重要なビジネスケースでは、部分失敗より全体の失敗の方がリスクが低いため
     const errorCheck = new sfn.Choice(this, 'CheckForErrors', {
       comment: 'Zero tolerance approach: complete failure is safer than partial success for data integrity',
     })
@@ -80,7 +79,6 @@ export class InlineMapConstruct extends Construct {
       )
       .otherwise(successState);
 
-    // シーケンシャルな処理フローを選択する理由: エラーチェック前に結果を整理して一貫したデータ構造を保つため
     const definition = this.errorHandlingMap
       .next(prepareResults)
       .next(errorCheck);
@@ -91,10 +89,10 @@ export class InlineMapConstruct extends Construct {
       comment: 'Demonstrates strict error handling with zero tolerance for business-critical workflows',
       logs: {
         destination: props.logGroup,
-        level: sfn.LogLevel.ERROR, // ERRORレベルのみログ出力する理由: コストとパフォーマンスのバランスを保つため
+        level: sfn.LogLevel.ERROR,
       },
       timeout: props.timeout ?? cdk.Duration.minutes(30),
-      tracingEnabled: true, // X-Rayトレーシングを有効化する理由: パフォーマンスボトルネックや実行パスを可視化してデバッグを容易にするため
+      tracingEnabled: true,
     });
   }
 }
