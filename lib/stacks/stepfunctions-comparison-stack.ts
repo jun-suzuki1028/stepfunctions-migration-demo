@@ -19,6 +19,7 @@ export class StepFunctionsComparisonStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: StepFunctionsComparisonStackProps) {
     super(scope, id, props);
 
+    // 共通関数を使用する理由: 両方のMapタイプで同一の処理ロジックを使い、エラーハンドリングの違いのみを測定するため
     this.sharedLambdaFunction = new lambda.Function(this, 'ProcessItemFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
@@ -48,31 +49,34 @@ export class StepFunctionsComparisonStack extends cdk.Stack {
       `),
       environment: {
         ENVIRONMENT: props?.environment ?? 'demo',
-        LOG_LEVEL: 'INFO'
+        LOG_LEVEL: 'INFO' // INFOレベルを選択する理由: デモ環境でのデバッグとパフォーマンスバランスを保つため
       },
     });
 
+    // 統一ロググループを使用する理由: 両方のMapタイプのログを集約管理し、比較分析を容易にするため
     const logGroup = new logs.LogGroup(this, 'StepFunctionsLogGroup', {
       logGroupName: `/aws/stepfunctions/${this.stackName}`,
-      retention: props?.retentionDays ?? logs.RetentionDays.ONE_WEEK,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      retention: props?.retentionDays ?? logs.RetentionDays.ONE_WEEK, // 1週間保持する理由: デモ環境でのコスト最適化と十分なデバッグ期間をバランスするため
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // DESTROYポリシーを選択する理由: デモリソースのクリーンアップを簡単にし、不要なコストを避けるため
     });
 
+    // Inline Mapを使用する理由: エラー許容なしの厳密なエラーハンドリングが必要なビジネスケースを実証するため
     const inlineMapConstruct = new InlineMapConstruct(this, 'InlineMapConstruct', {
       processItemFunction: this.sharedLambdaFunction,
       logGroup,
-      timeout: cdk.Duration.minutes(15),
+      timeout: cdk.Duration.minutes(15), // 15分のタイムアウトを設定する理由: デモデータの処理時間とコストをバランスし、無限実行を防ぐため
     });
 
+    // Distributed Mapを使用する理由: 大量データ処理で高いスループットと一定の失敗許容が求められるケースを実証するため
     const distributedMapConstruct = new DistributedMapConstruct(this, 'DistributedMapConstruct', {
       processItemFunction: this.sharedLambdaFunction,
       logGroup,
-      maxConcurrency: 5,
-      toleratedFailurePercentage: 10,
+      maxConcurrency: 5, // 5に制限する理由: デモ環境でのLambda同時実行数制限とコストを考慮しつつ、並列処理の効果を示すため
+      toleratedFailurePercentage: 10, // 10%許容する理由: エラーシミュレーション率と同じ値に設定し、Distributed Mapの失敗許容機能を明確に実証するため
       timeout: cdk.Duration.minutes(15),
     });
 
-
+    // パブリックプロパティで公開する理由: 他のスタックやテストコードから簡単にアクセスでき、統合テストやパフォーマンス測定を可能にするため
     this.inlineMapStateMachine = inlineMapConstruct.stateMachine;
     this.distributedMapStateMachine = distributedMapConstruct.stateMachine;
 

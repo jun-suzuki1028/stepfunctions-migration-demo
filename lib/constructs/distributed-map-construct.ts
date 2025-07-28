@@ -19,8 +19,7 @@ export class DistributedMapConstruct extends Construct {
   constructor(scope: Construct, id: string, props: DistributedMapConstructProps) {
     super(scope, id);
 
-
-
+    // Distributed Mapを選択する理由: 大量のアイテムを高い同時実行数で処理し、一定の失敗率を許容しながら全体のスループットを最大化するため
     const distributedMap = new sfn.DistributedMap(this, 'DistributedMap', {
       itemsPath: '$.items',
       resultPath: '$.results',
@@ -28,6 +27,7 @@ export class DistributedMapConstruct extends Construct {
       toleratedFailurePercentage: props.toleratedFailurePercentage ?? 20,
     });
 
+    // シンプルなタスク定義を選択する理由: Distributed Mapが失敗率でエラーを自動管理するため、個別のアイテムレベルでの複雑なエラーハンドリングは不要であるため
     const processTask = new tasks.LambdaInvoke(this, 'ProcessTask', {
       lambdaFunction: props.processItemFunction,
       outputPath: '$.Payload',
@@ -35,11 +35,12 @@ export class DistributedMapConstruct extends Construct {
 
     distributedMap.itemProcessor(processTask);
 
+    // CDKデフォルトロールを使用する理由: Distributed Mapの基本機能にはデフォルトロールで十分であり、過度な権限設定を避けるため
     this.stateMachine = new sfn.StateMachine(this, 'StateMachine', {
       stateMachineName: `${cdk.Stack.of(this).stackName}-DistributedMapDemo`,
       definitionBody: sfn.DefinitionBody.fromChainable(distributedMap),
       timeout: props.timeout ?? cdk.Duration.minutes(30),
-      tracingEnabled: true,
+      tracingEnabled: true, // X-Rayトレーシングを有効化する理由: 大量処理のパフォーマンスボトルネックを特定し、スケーリング最適化を行うため
     });
   }
 }
